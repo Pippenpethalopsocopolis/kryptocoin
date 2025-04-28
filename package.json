@@ -1,0 +1,13 @@
+{
+  "name": "mycoin",
+  "version": "1.0.0",
+  "description": "A minimal blockchain and coin in Node.js",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "crypto-js": "^4.2.0",
+    "elliptic": "^6.6.1"
+  }
+}
