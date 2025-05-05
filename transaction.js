@@ -16,7 +16,7 @@ class Transaction {
 
     signTransaction(signingKey) {
         if (signingKey.getPublic('hex') !== this.fromAddress) {
-            throw new Error('❌ You cannot sign transactions for other wallets!');
+            throw new Error('Farklı cüzdanlar için imzalama yapılamaz!');
         }
 
         const hashTx = this.calculateHash();
@@ -29,7 +29,7 @@ class Transaction {
         if (this.fromAddress === null) return true;
 
         if (!this.signature || this.signature.length === 0) {
-            throw new Error('❌ No signature in this transaction.');
+            throw new Error('Bu transferde imza bulunamadı.');
         }
 
         const publicKey = ec.keyFromPublic(this.fromAddress, 'hex');

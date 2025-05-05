@@ -10,35 +10,43 @@ const rl = readline.createInterface({
 
 let myCoin = new Blockchain();
 
+console.log('===========================================================================');
+console.log('                    Kryptocoin --- Created By Berk Öcal                    ');
+console.log('===========================================================================\n\n');
+
 function mineInitialReward() {
-    console.log('\n🚀 Mining initial reward block...');
+    console.log(`Açık Cüzdan ID'niz: ${publicKey}`);
+    console.log(`Gizli Cüzdan ID'niz: ${key.getPrivate('hex')}\n`);
+
+    console.log('Genesis blok oluşturuldu, ilk blok kazılıyor...');
     myCoin.minePendingTransactions(publicKey);
 
-    console.log(`💰 Balance after initial mining: ${myCoin.getBalanceOfAddress(publicKey)} coins`);
+    console.log(`Cüzdan: ${myCoin.getBalanceOfAddress(publicKey)} Kryptocoin`);
     promptMining();
 }
 
 function promptMining() {
-    rl.question('\n⚡️ Create a transaction and mine next block? (y/n): ', (answer) => {
-        if (answer.toLowerCase() === 'y') {
-            const tx = new Transaction(publicKey, 'address' + Math.floor(Math.random() * 1000), Math.floor(Math.random() * 10));
+    rl.question('\nKryptocoin transferi yap ve sonraki bloğu kaz? (Evet(e)/Hayır(h)): ', (answer) => {
+        if(answer.toLowerCase() === 'e') {
+            const tx = new Transaction(publicKey, 'address' + Math.floor(Math.random() * 1000), Math.floor(Math.random() * 9) + 1);
             tx.signTransaction(key); // SIGN the transaction
             myCoin.createTransaction(tx);
 
             mineNextBlock();
-        } else {
-            console.log('\n🛑 Stopping miner...');
-            console.log('✅ Final Blockchain:', JSON.stringify(myCoin, null, 2));
+        }
+        else {
+            console.log('\nMadencilik duruduruluyor...');
+            console.log('En Sonuncu Blockchain:\n', JSON.stringify(myCoin, null, 2));
             rl.close();
         }
     });
 }
 
 function mineNextBlock() {
-    console.log('\n🚀 Mining pending transactions...');
+    console.log('\nBekleyen transferler kazılıyor...');
     myCoin.minePendingTransactions(publicKey);
 
-    console.log(`💰 Balance of your wallet: ${myCoin.getBalanceOfAddress(publicKey)} coins`);
+    console.log(`Cüzdan: ${myCoin.getBalanceOfAddress(publicKey)} Kryptocoin`);
     promptMining();
 }
 

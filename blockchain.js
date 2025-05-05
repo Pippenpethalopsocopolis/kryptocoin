@@ -21,6 +21,8 @@ class Blockchain {
 
     // Mine pending transactions and add the block to the chain
     minePendingTransactions(miningRewardAddress) {
+        this.halveRewards();
+
         const rewardTx = new Transaction(null, miningRewardAddress, this.miningReward);
         this.pendingTransactions.push(rewardTx);
 
@@ -34,7 +36,11 @@ class Blockchain {
         // Mine the block using PoW
         block.mineBlock(this.difficulty);
 
-        console.log("Block successfully mined!");
+        if (!this.isChainValid()) {
+            throw new Error('Blockchain geçersiz, madencilik yapılamaz!');
+        }
+
+        console.log("Blok başarıyla kazıldı!");
 
         // Add the mined block to the chain
         this.chain.push(block);
@@ -46,16 +52,16 @@ class Blockchain {
     // Add a transaction to the blockchain
     createTransaction(transaction) {
         if (!transaction.fromAddress || !transaction.toAddress) {
-            throw new Error('❌ Transaction must include from and to address.');
+            throw new Error('Transfer, gönderilecek adres ve gönderici adresi içermelidir.');
         }
 
         if (!transaction.isValid()) {
-            throw new Error('❌ Cannot add invalid transaction to chain.');
+            throw new Error('Geçersiz transfer, bloğa eklenemez!');
         }
 
         const balance = this.getBalanceOfAddress(transaction.fromAddress);
         if (balance < transaction.amount) {
-            throw new Error('❌ Not enough balance to perform this transaction.');
+            throw new Error('Hesapta yeterli Kryptocoin yok.');
         }
 
         this.pendingTransactions.push(transaction);
@@ -69,26 +75,26 @@ class Blockchain {
 
             // Validate block hash
             if (currentBlock.hash !== currentBlock.calculateHash()) {
-                console.log(`❌ Invalid block hash at block ${i}`);
+                console.log(`Geçersiz block hash tespit edildi. ${i}`);
                 return false;
             }
 
             // Validate previous block hash
             if (currentBlock.previousHash !== previousBlock.hash) {
-                console.log(`❌ Invalid previous hash link at block ${i}`);
+                console.log(`Önceki hash geçersiz. ${i}`);
                 return false;
             }
 
             // Validate the hash of the current block
             if (!currentBlock.hasValidHash(this.difficulty)) {
-                console.log(`❌ Invalid block hash (PoW) at block ${i}`);
+                console.log(`Geçersiz iş ispatı hash'i tespit edildi. ${i}`);
                 return false;
             }
 
             // Validate all transactions in the block
             for (const tx of currentBlock.transactions) {
                 if (!tx.isValid()) {
-                    console.log(`❌ Invalid transaction signature at block ${i}`);
+                    console.log(`Geçersiz transfer imzası tespit edildi. ${i}`);
                     return false;
                 }
             }
@@ -115,6 +121,14 @@ class Blockchain {
         }
 
         return balance;
+    }
+
+    halveRewards() {
+        const height = this.chain.length;
+        if (height > 1 && (height - 1) % 210000 === 0) {
+            this.miningReward = this.miningReward / 2;
+            console.log(`Yarılama gerçekleşti! Yeni kazım ödülü: ${this.miningReward}`);
+        }
     }
 }
 

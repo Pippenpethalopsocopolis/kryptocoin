@@ -21,7 +21,7 @@ class Block {
             this.nonce++; // Increment the nonce
             this.hash = this.calculateHash(); // Recalculate the hash with the new nonce
         }
-        console.log("Block mined: " + this.hash);
+        console.log("Blok kazıldı: " + this.hash);
     }
 
     // Validating the block hash
