@@ -61,6 +61,7 @@ function mineNextBlock() {
     P2P.broadcastLatest(myCoin);
 
     console.log(`Cüzdan: ${myCoin.getBalanceOfAddress(publicKey)} Kryptocoin`);
+    console.log('Blok Zinciri:', JSON.stringify(myCoin.chain, null, 2));
     promptMining();
 }
 
