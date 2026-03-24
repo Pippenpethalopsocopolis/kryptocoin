@@ -1,6 +1,7 @@
 const Blockchain = require('./blockchain');
 const Transaction = require('./transaction');
 const { key, publicKey } = require('./wallet');
+const P2P = require('./p2p-server');
 const readline = require('readline');
 
 const rl = readline.createInterface({
@@ -9,6 +10,12 @@ const rl = readline.createInterface({
 });
 
 let myCoin = new Blockchain();
+
+const p2pPort = process.env.P2P_PORT || 6001;
+const peers = process.env.PEERS ? process.env.PEERS.split(',') : [];
+
+P2P.initP2PServer(myCoin, p2pPort);
+P2P.initP2PClient(myCoin, peers);
 
 console.log('===========================================================================');
 console.log('                    Kryptocoin --- Created By Berk Öcal                    ');
@@ -28,9 +35,15 @@ function mineInitialReward() {
 function promptMining() {
     rl.question('\nKryptocoin transferi yap ve sonraki bloğu kaz? (Evet(e)/Hayır(h)): ', (answer) => {
         if(answer.toLowerCase() === 'e') {
-            const tx = new Transaction(publicKey, 'address' + Math.floor(Math.random() * 1000), Math.floor(Math.random() * 9) + 1);
+            const tx = new Transaction(publicKey, 'address' + Math.floor(Math.random() * 1000), 1);
             tx.signTransaction(key); // SIGN the transaction
-            myCoin.createTransaction(tx);
+            try {
+                myCoin.createTransaction(1);
+                P2P.broadcastTransaction(1);
+            } catch (err) {
+                console.log(`Transfer başarısız: ${err.message}`);
+                console.log('Ödül bloğu kazılıyor...');
+            }
 
             mineNextBlock();
         }
@@ -45,6 +58,7 @@ function promptMining() {
 function mineNextBlock() {
     console.log('\nBekleyen transferler kazılıyor...');
     myCoin.minePendingTransactions(publicKey);
+    P2P.broadcastLatest(myCoin);
 
     console.log(`Cüzdan: ${myCoin.getBalanceOfAddress(publicKey)} Kryptocoin`);
     promptMining();
